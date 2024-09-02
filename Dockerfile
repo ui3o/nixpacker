@@ -27,5 +27,5 @@ RUN /root/.nix-profile/bin/dpkg -x /root/debpack/hello_*.deb  /tmp
 
 FROM alpine:latest
 COPY --from=builder /tmp/nix /nix
-COPY --from=builder /root/pack.info /
-ENTRYPOINT [ "sleep", "inf" ]
+COPY --from=builder /root/*.info /nix
+ENTRYPOINT [ "cp", "-rf", "/nix/.", "/share/"]

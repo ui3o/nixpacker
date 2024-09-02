@@ -37,5 +37,5 @@ with open(FLAKE_FILE, "w") as file:
     file.write(filedata)
 
 # Write the file out again
-with open("pack.info", "w") as file:
-    file.write(tag+"\n")
+with open(f"{tag}.info", "w") as file:
+    file.write("")
