@@ -16,8 +16,8 @@ if uname_output.find("x86_64") == -1:
     channel = darwin_latest_channel
 
 tag = os.environ["GIT_TAG"]
-package = tag.split("@")[0]
-version = tag.split("@")[1]
+package = tag.split("--")[0]
+version = tag.split("--")[1]
 date = ""
 hash = ""
 
