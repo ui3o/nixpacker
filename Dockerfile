@@ -20,7 +20,7 @@ RUN /root/.nix-profile/bin/nix-env -iA python3 -f https://github.com/NixOS/nixpk
 
 RUN /root/.nix-profile/bin/python3 /root/flake.creator.py
 RUN /root/.nix-profile/bin/nix bundle --bundler github:NixOS/bundlers#toDEB -o debpack /root/flake.nix
-RUN /root/.nix-profile/bin/dpkg -x /root/debpack/hello_*.deb  /tmp
+RUN /root/.nix-profile/bin/dpkg -x /root/debpack/*.deb  /tmp
 
 
 FROM alpine:latest
