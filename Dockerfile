@@ -14,7 +14,6 @@ COPY ./src/flake.nix /root
 COPY ./src/flake.creator.py /root
 COPY ./versions.json /root
 
-ENV VERSION_FILE=/root/versions.json
 ENV FLAKE_FILE=/root/flake.nix
 
 RUN /root/.nix-profile/bin/nix-env -iA dpkg -f https://github.com/NixOS/nixpkgs/archive/refs/heads/nixpkgs-unstable.tar.gz
