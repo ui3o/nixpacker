@@ -12,7 +12,6 @@ WORKDIR /root
 
 COPY ./src/flake.nix /root
 COPY ./src/flake.creator.py /root
-COPY ./versions.json /root
 
 ENV FLAKE_FILE=/root/flake.nix
 
