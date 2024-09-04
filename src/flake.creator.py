@@ -2,9 +2,7 @@ import os
 import subprocess
 import urllib.request
 
-
 FLAKE_FILE = os.environ["FLAKE_FILE"]
-
 
 contents: str = (
     urllib.request.urlopen("https://lazamar.co.uk/nix-versions/").read().decode("utf-8")
@@ -18,8 +16,8 @@ if uname_output.find("x86_64") == -1:
     channel = darwin_latest_channel
 
 tag = os.environ["GIT_TAG"]
-package = tag.split("--")[0]
-version = tag.split("--")[1]
+package = tag.split("@")[0]
+version = tag.split("@")[1]
 date = ""
 hash = ""
 
@@ -59,5 +57,5 @@ with open(FLAKE_FILE, "w") as file:
     file.write(filedata)
 
 # Write the file out again
-with open(f"{tag}--{date}.info", "w") as file:
+with open(f"{package}--{version}--{date}.info", "w") as file:
     file.write("")
