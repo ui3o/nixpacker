@@ -39,7 +39,7 @@ else:
         el = [x for x in list if x.find(f"<td>{version}</td>") > -1][0]
         hash = el.split('revision=')[1].split("&amp;")[0]
         date = el.split("</a></td><td>")[1].split("</td></tr>")[0]
-        print("[INFO] meta found: ", hash, date)
+        print(f"[INFO] meta found on {channel} channel: ", hash, date)
     except IndexError:
         print(f"[ERROR] No package {version} version found on {channel} channel!")
         os._exit(1)
