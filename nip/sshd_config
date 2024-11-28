@@ -77,9 +77,9 @@ UsePAM no
 #X11UseLocalhost yes
 #PermitTTY yes
 #PrintMotd yes
-#PrintLastLog yes
+PrintLastLog no
 #TCPKeepAlive yes
-#PermitUserEnvironment no
+PermitUserEnvironment yes
 #Compression delayed
 #ClientAliveInterval 0
 #ClientAliveCountMax 3
@@ -91,7 +91,7 @@ UsePAM no
 #VersionAddendum none
 
 # no default banner path
-#Banner none
+Banner none
 
 # override default of no subsystems
 #Subsystem	sftp	/usr/libexec/sftp-server
