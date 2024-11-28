@@ -9,4 +9,4 @@ NIP_IMAGE="localhost/nip:nip"
 [ ! -f ~/.ssh/nip/sshd_config ] && mkdir -p ~/.ssh/nip && curl --output ~/.ssh/nip/sshd_config "https://raw.githubusercontent.com/ui3o/nixpacker/refs/heads/main/nip/sshd_config"
 /usr/sbin/sshd -h ~/.ssh/nip_id_rsa -f $HOME/.ssh/nip/sshd_config
 
-$NIP_RUNTIME $NIP_RUN_DEFAULTS -v $HOME:/root -v /tmp:/tmp $NIP_EXTRA $NIP_RUNTIME $(basename "$0") $@
+echo $NIP_RUNTIME $NIP_RUN_DEFAULTS -v $HOME:/root -v /tmp:/tmp $NIP_EXTRA $NIP_RUNTIME $(basename "$0") $@
