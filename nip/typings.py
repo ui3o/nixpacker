@@ -1,15 +1,15 @@
-from typing import TypedDict
+from typing import Required, TypedDict
 
 
 class Config(TypedDict, total=False):
-    tags: list[str]
+    tags: Required[list[str]]
     """
     list of pulled docker.io tags.
     
     example: docker.io tag is hello--2.10
 
     """
-    defaults: dict[str, str]
+    defaults: Required[dict[str, str]]
     """
     list of available packages on container path
 
@@ -20,7 +20,7 @@ class Config(TypedDict, total=False):
     If the executable has different end in the path than possible to add regex in the
     definition. Example: "2.1.2||-lib"
     """
-    osBindings: dict[str, str]
+    osBindings: Required[dict[str, str]]
     """
     binding program to host os. 
     

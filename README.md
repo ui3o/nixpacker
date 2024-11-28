@@ -1,6 +1,10 @@
 # nixpacker
 Build nix package into docker image
 
+# install
+
+`curl -fsSL https://raw.githubusercontent.com/ui3o/nixpacker/refs/heads/main/nip/nip | NIP_INSTALL=true bash`
+
 # build steps
 
 * check available package on this site: https://lazamar.co.uk/nix-versions
@@ -8,5 +12,5 @@ Build nix package into docker image
 * create a new git tag like this: `hello--2.10`
 
 # run steps
-* `podman run -v share:/share -it docker.io/ui3o/nixpacker:hello--2.10` this step copy the nix store to the shared volume
-* `podman run -it -v share:/nix  alpine` this is an example how possible to use nix store in other container
+* `podman run --rm -v $HOME/.nix:/nix -it docker.io/ui3o/nixpacker:hello--2.10` this step copy the nix store to the shared volume
+

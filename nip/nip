@@ -1,12 +1,19 @@
 #!/bin/bash
 
 NIP_RUNTIME=podman
-NIP_RUN_DEFAULTS="run --rm -it"
+NIP_RUN_DEFAULTS="run --rm --privileged -it --env-file /tmp/nip-env-file"
 NIP_IMAGE="localhost/nip:nip"
 [ -f ~/.config/nip/.bashrc ] && source ~/.config/nip/.bashrc
 
-[ ! -f ~/.ssh/nip_id_rsa ] && mkdir -p ~/.ssh/nip && ssh-keygen -b 2048 -t rsa -f ~/.ssh/nip_id_rsa -q -N "" && cp  ~/.ssh/nip_id_rsa.pub  ~/.ssh/nip/authorized_keys
-[ ! -f ~/.ssh/nip/sshd_config ] && mkdir -p ~/.ssh/nip && curl --output ~/.ssh/nip/sshd_config "https://raw.githubusercontent.com/ui3o/nixpacker/refs/heads/main/nip/sshd_config"
-/usr/sbin/sshd -h ~/.ssh/nip_id_rsa -f $HOME/.ssh/nip/sshd_config
+[ ! -f ~/.ssh/id_rsa ] && mkdir -p ~/.ssh/nip && ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
+[ ! -f ~/.ssh/nip/authorized_keys ] && mkdir -p ~/.ssh/nip && cp  ~/.ssh/id_rsa.pub  ~/.ssh/nip/authorized_keys
+[ ! -f ~/.ssh/nip/sshd_config ] && mkdir -p ~/.ssh/nip && \
+    $NIP_RUNTIME $NIP_RUN_DEFAULTS -v $HOME:/root --entrypoint cp $NIP_IMAGE /template/sshd_config /root/.ssh/nip/sshd_config
+/usr/sbin/sshd -h ~/.ssh/id_rsa -f $HOME/.ssh/nip/sshd_config
 
+echo "PATH=$PATH" > ~/.ssh/environment
+env > /tmp/nip-env-file
+echo "HOME=/root" >> /tmp/nip-env-file
+echo "USER=root" >> /tmp/nip-env-file
+echo "OS_USER=$USER" >> /tmp/nip-env-file
 $NIP_RUNTIME $NIP_RUN_DEFAULTS -v $HOME:/root -v /tmp:/tmp $NIP_EXTRA $NIP_IMAGE $(basename "$0") $@
