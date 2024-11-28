@@ -1,0 +1,12 @@
+#!/bin/bash
+
+NIP_RUNTIME=podman
+NIP_RUN_DEFAULTS="run --rm -it"
+NIP_IMAGE="localhost/nip:nip"
+[ -f ~/.config/nip/.bashrc ] && source ~/.config/nip/.bashrc
+
+[ ! -f ~/.ssh/nip_id_rsa ] && mkdir -p ~/.ssh/nip && ssh-keygen -b 2048 -t rsa -f ~/.ssh/nip_id_rsa -q -N "" && cp  ~/.ssh/nip_id_rsa.pub  ~/.ssh/nip/authorized_keys
+[ ! -f ~/.ssh/nip/sshd_config ] && mkdir -p ~/.ssh/nip && curl --output ~/.ssh/nip/sshd_config "https://raw.githubusercontent.com/ui3o/nixpacker/refs/heads/main/nip/sshd_config"
+/usr/sbin/sshd -h ~/.ssh/nip_id_rsa -f $HOME/.ssh/nip/sshd_config
+
+$NIP_RUNTIME $NIP_RUN_DEFAULTS -v $HOME:/root -v /tmp:/tmp $NIP_EXTRA $NIP_RUNTIME $(basename "$0") $@
