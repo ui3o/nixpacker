@@ -3,6 +3,7 @@ import sys
 import re
 import subprocess
 import urllib.request
+from urllib.parse import unquote
 
 
 def custom_key(str):
@@ -28,7 +29,7 @@ uname_output = subprocess.getoutput("uname -a")
 if uname_output.find("x86_64") == -1:
     channel = darwin_latest_channel
 
-tag = os.environ["GIT_TAG"]
+tag = unquote(os.environ["GIT_TAG"])
 package = tag.split("--")[0]
 version = tag.split("--")[1]
 date = ""
