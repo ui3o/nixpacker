@@ -74,7 +74,7 @@ with open(FLAKE_FILE, "w") as file:
 
 # Write the file out again
 with open(f"{package}--{version}.info", "w") as file:
-    file.write(f"{package}, {version}, {keyName}, {date}, {hash}, {channel}")
+    file.write(f"{package}, {version}, {keyName}, {date}, {hash}, {channel}\n")
 
 execute(
     f"/root/.nix-profile/bin/nix-channel --add https://nixos.org/channels/{channel} nixpkgs"

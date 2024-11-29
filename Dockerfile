@@ -12,6 +12,7 @@ RUN echo install nix... && \
     curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install linux --no-confirm --init none --extra-conf "filter-syscalls = false"
 
 RUN echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
+RUN yum install -y python3
 RUN python3 /root/builder.py
 
 
