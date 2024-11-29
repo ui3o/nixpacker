@@ -3,7 +3,7 @@ import sys
 import re
 import subprocess
 import urllib.request
-import urllib.request, json
+import json
 
 
 def execute(cmd):
@@ -33,6 +33,7 @@ if os.environ.get("GITHUB_RELEASE", None) is not None:
     ) as url:
         data = json.load(url)
         tag = data["name"]
+        print(f"[INFO] collect tag from github {tag}")
 print(f"[INFO] tag is {tag}")
 package = tag.split("--")[0]
 version = tag.split("--")[1]
