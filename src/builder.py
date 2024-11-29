@@ -3,11 +3,7 @@ import sys
 import re
 import subprocess
 import urllib.request
-from urllib.parse import unquote
-
-
-def custom_key(str):
-    return -len(str), str.lower()
+import urllib.request, json
 
 
 def execute(cmd):
@@ -29,7 +25,15 @@ uname_output = subprocess.getoutput("uname -a")
 if uname_output.find("x86_64") == -1:
     channel = darwin_latest_channel
 
-tag = unquote(os.environ["GIT_TAG"])
+
+tag = os.environ["GIT_TAG"]
+if os.environ.get("GITHUB_RELEASE", None) is not None:
+    with urllib.request.urlopen(
+        f"https://api.github.com/repos/ui3o/nixpacker/releases/tags/{tag}"
+    ) as url:
+        data = json.load(url)
+        tag = data["name"]
+print(f"[INFO] tag is {tag}")
 package = tag.split("--")[0]
 version = tag.split("--")[1]
 date = ""

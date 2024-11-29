@@ -30,6 +30,7 @@ jobs:
         push: true
         build-args: |
           GIT_TAG=${{steps.tag.outputs.tag}}
+          GITHUB_RELEASE=true
         tags: ui3o/nixpacker:${{steps.tag.outputs.tag}}
         platforms: linux/amd64,linux/arm64        
     - name: "Docker Hub Description"
