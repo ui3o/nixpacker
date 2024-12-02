@@ -6,9 +6,13 @@ import urllib.request
 import json
 
 
-def execute(cmd):
-    print(f"[RUN] {cmd}")
+def info(msg: str):
+    print(msg)
     sys.stdout.flush()
+
+
+def execute(cmd):
+    info(f"[RUN] {cmd}")
     subprocess.run(cmd, shell=True)
 
 
@@ -27,22 +31,22 @@ if uname_output.find("x86_64") == -1:
 
 
 tag = os.environ["GIT_TAG"]
-print("[INFO] check GITHUB_RELEASE environment var")
+info("[INFO] check GITHUB_RELEASE environment var")
 if os.environ.get("GITHUB_RELEASE", None) is not None:
     with urllib.request.urlopen(
         f"https://api.github.com/repos/ui3o/nixpacker/releases/tags/{tag}"
     ) as url:
         data = json.load(url)
         tag = data["name"]
-        print(f"[INFO] collect tag from github {tag}")
-print(f"[INFO] tag is {tag}")
+        info(f"[INFO] collect tag from github {tag}")
+info(f"[INFO] tag is {tag}")
 package = tag.split("--")[0]
 version = tag.split("--")[1]
 date = ""
 keyName = ""
 hash = ""
 
-print("[INFO] collect data for", package, version)
+info(f"[INFO] collect data for {package} {version}")
 contents: str = (
     urllib.request.urlopen(
         f"https://lazamar.co.uk/nix-versions/?channel={channel}&package={package}"
@@ -52,19 +56,19 @@ contents: str = (
 )
 
 if contents.find("<p>No results found</p>") > -1:
-    print(f"[ERROR] No package found on {channel} channel!")
+    info(f"[ERROR] No package found on {channel} channel!")
     os._exit(1)
 else:
     list = contents.split("<tbody>")[1].split("</tbody>")[0].split("<tr")[1:]
     try:
         el = [x for x in list if x.find(f"<td>{version}</td>") > -1][0]
-        print(el)
+        info(el)
         hash = el.split("revision=")[1].split("&amp;")[0]
         keyName = el.split("keyName=")[1].split("&amp;")[0]
         date = el.split("</a></td><td>")[1].split("</td></tr>")[0]
-        print(f"[INFO] meta found on {channel} channel: ", keyName, date, hash)
+        info(f"[INFO] meta found on {channel} channel: {keyName} {date} {hash}")
     except IndexError:
-        print(f"[ERROR] No package {version} version found on {channel} channel!")
+        info(f"[ERROR] No package {version} version found on {channel} channel!")
         os._exit(1)
 
 # Read in the file
