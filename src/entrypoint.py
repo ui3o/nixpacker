@@ -2,7 +2,7 @@ import os
 import subprocess
 
 # copy all /.nix packages into /nix/warehouse
-subprocess.run("mkdir -p /nix/warehouse /nix/info /nix/bin /nix/store", shell=True)
+subprocess.run("mkdir -p /nix/warehouse /nix/info /nix/store", shell=True)
 subprocess.run("cp -rfv /.nix/store/. /nix/warehouse", shell=True)
 subprocess.run("cp -rfv /.nix/*.info /nix/info", shell=True)
 
