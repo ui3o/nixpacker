@@ -27,6 +27,7 @@ if uname_output.find("x86_64") == -1:
 
 
 tag = os.environ["GIT_TAG"]
+print("[INFO] check GITHUB_RELEASE environment var")
 if os.environ.get("GITHUB_RELEASE", None) is not None:
     with urllib.request.urlopen(
         f"https://api.github.com/repos/ui3o/nixpacker/releases/tags/{tag}"
