@@ -1,6 +1,7 @@
-FROM docker.io/fedora:latest as builder
+FROM docker.io/fedora:latest AS builder
 
 ARG GIT_TAG
+ARG GITHUB_RELEASE
 WORKDIR /root
 
 COPY ./src/flake.nix /root
