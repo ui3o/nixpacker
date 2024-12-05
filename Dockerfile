@@ -8,6 +8,7 @@ COPY ./src/builder.py /root
 
 RUN export PATH=~/.nix-profile/bin:$PATH
 RUN echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
+RUN echo "filter-syscalls = false" >> /etc/nix/nix.conf
 RUN nix-env -iA nixpkgs.python3 && nix-env -iA nixpkgs.dpkg
 RUN python3 /root/builder.py
 
