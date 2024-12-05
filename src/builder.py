@@ -29,7 +29,7 @@ if os.environ.get("GITHUB_RELEASE", None) is not None:
         info(f"[INFO] collect tag from github {tag}")
 package = tag.split("--")[0]
 version = tag.split("--")[1]
-info(f"[INFO] tag is {tag} and package is {package} with version {version}")
+info(f"[INFO] tag is {tag} and package is {package} with version {version}/{gitTagVersion}")
 date = ""
 keyName = ""
 hash = ""
