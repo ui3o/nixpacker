@@ -1,4 +1,4 @@
-from configs.typings import Config
+from nip.typings import Config
 
 config: Config = {
     "tags": [

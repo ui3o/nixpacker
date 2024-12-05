@@ -104,7 +104,7 @@ def createGeneration(
         # if the new generation create have to make new osBindings
         info("create osBindings into generation folder")
         execute(f"mkdir -p {generationPath}/osBindings")
-        execute(f"cp /template/nip {generationPath}/osBindings")
+        execute(f"cp /template/nip.sh {generationPath}/osBindings/nip")
         for key, value in osBindings.items():
             info(f"create program on host os: {key}")
             with open(f"{generationPath}/osBindings/{key}", "w") as f:
@@ -115,17 +115,17 @@ def createGeneration(
 
 
 def preCheck():
-    if os.path.exists("/template/configs/config.py") is False:
+    if os.path.exists("/template/nip/config.py") is False:
         info("create required directories")
         execute(
             "mkdir -p ~/.nix/generations ~/.nix/warehouse ~/.nix/info ~/.nix/store ~/.config/nip"
         )
         info("copy typings into host config folder")
-        execute("cp /template/configs_tmp/typings.py ~/.config/nip/typings.py")
+        execute("cp /template/nip_tmp/typings.py ~/.config/nip/typings.py")
         info("copy config.py into host config folder")
-        execute("cp /template/configs_tmp/config.py ~/.config/nip")
+        execute("cp /template/nip_tmp/config.py ~/.config/nip")
 
-    import configs.config as config
+    import nip.config as config
 
     # create link generation
     createGeneration(
@@ -133,7 +133,7 @@ def preCheck():
     )
 
 
-if sys.argv[1] == "nip":
+if sys.argv[1].startswith("nip"):
     preCheck()
     info(f"current generation is {generationPath.replace("/root", "~")}")
 else:
