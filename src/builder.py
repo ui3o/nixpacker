@@ -16,18 +16,16 @@ def execute(cmd):
     subprocess.run(cmd, shell=True)
 
 
-FLAKE_FILE = os.environ["FLAKE_FILE"]
-
 contents: str = (
     urllib.request.urlopen("https://lazamar.co.uk/nix-versions/").read().decode("utf-8")
 )
 darwin_latest_channel = contents.split("option value=")[1].split('"')[1]
 
 
-channel = "nixpkgs-unstable"
+channel = darwin_latest_channel
 uname_output = subprocess.getoutput("uname -a")
-if uname_output.find("x86_64") == -1:
-    channel = darwin_latest_channel
+if uname_output.find("x86_64") != -1:
+    channel = darwin_latest_channel.replace("nixpkgs", "nixos").replace("-darwin", "")
 
 
 tag = os.environ["GIT_TAG"]
@@ -71,30 +69,16 @@ else:
         info(f"[ERROR] No package {version} version found on {channel} channel!")
         os._exit(1)
 
-# Read in the file
-with open(FLAKE_FILE, "r") as file:
-    filedata = file.read()
-
-# Replace the target string
-filedata = filedata.replace("__ref__", hash)
-filedata = filedata.replace("__pack__", keyName)
-
-# Write the file out again
-with open(FLAKE_FILE, "w") as file:
-    file.write(filedata)
 
 # Write the file out again
 with open(f"{package}--{version}.info", "w") as file:
     file.write(f"{package}, {version}, {keyName}, {date}, {hash}, {channel}\n")
 
-execute(
-    f"/root/.nix-profile/bin/nix-channel --add https://nixos.org/channels/{channel} nixpkgs"
-)
-execute("/root/.nix-profile/bin/nix-channel --update")
-execute("/root/.nix-profile/bin/nix-env -iA nixpkgs.dpkg")
+# nix bundle --bundler github:NixOS/bundlers#toDEB -o debpack -f https://github.com/NixOS/nixpkgs/archive/42c5e250a8a9162c3e962c78a4c393c5ac369093.tar.gz gradle
+
 # find /tmp/nix/store/ -depth 2 -name bin
 execute(
-    "/root/.nix-profile/bin/nix bundle --bundler github:NixOS/bundlers#toDEB -o debpack /root/flake.nix"
+    f"nix bundle --bundler github:NixOS/bundlers#toDEB -o debpack -f https://github.com/NixOS/nixpkgs/archive/{hash}.tar.gz {package}"
 )
 execute("/root/.nix-profile/bin/dpkg -x /root/debpack/*.deb /tmp")
 

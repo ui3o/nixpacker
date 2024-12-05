@@ -1,4 +1,4 @@
-from typings import Config
+from configs.typings import Config
 
 config: Config = {
     "tags": [
