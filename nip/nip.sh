@@ -4,6 +4,7 @@
 NIP_CMD="${NIP_BASENAME} $@"
 NIP_RUNTIME=podman
 NIP_RUN_DEFAULTS="run --rm --privileged -it --env-file $HOME/.nix/environment"
+NIP_RUN_DEFAULTS="${NIP_RUN_DEFAULTS} -v $HOME:/root"
 NIP_IMAGE="docker.io/ui3o/nixpacker:nip"
 [ -f ~/.config/nip/.bashrc ] && source ~/.config/nip/.bashrc
 
@@ -20,6 +21,7 @@ echo "HOME=/root" >> ~/.nix/environment
 echo "USER=root" >> ~/.nix/environment
 echo "OS_USER=$USER" >> ~/.nix/environment
 echo "OS_HOME=$HOME" >> ~/.nix/environment
+echo "OS_PWD=$PWD" >> ~/.nix/environment
 [[ ! -z "${NIP_DEBUG}" ]] && NIP_RUN_DEFAULTS="${NIP_RUN_DEFAULTS} --entrypoint bash"
 [[ ! -z "${NIP_DEBUG}" ]] && NIP_CMD=""
-$NIP_RUNTIME $NIP_RUN_DEFAULTS -v $HOME:/root -v /tmp:/tmp $NIP_EXTRA $NIP_IMAGE $NIP_CMD
+$NIP_RUNTIME $NIP_RUN_DEFAULTS $NIP_EXTRA $NIP_IMAGE $NIP_CMD
