@@ -1,4 +1,4 @@
-name: "[nip] Docker Image CI"
+name: "[nip] NIP Image CI"
 on:
   push:
     tags:        

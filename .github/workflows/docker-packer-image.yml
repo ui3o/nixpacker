@@ -1,4 +1,4 @@
-name: "[amd64] Docker Image CI"
+name: "[amd64/arm64] Packager Image CI"
 on:
   push:
     tags:        
@@ -32,7 +32,7 @@ jobs:
           GIT_TAG=${{steps.tag.outputs.tag}}
           GITHUB_RELEASE=true
         tags: ui3o/nixpacker:${{steps.tag.outputs.tag}}
-        platforms: linux/amd64        
+        platforms: linux/amd64,linux/arm64       
     - name: "Docker Hub Description"
       uses: peter-evans/dockerhub-description@v3
       with:
