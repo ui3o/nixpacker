@@ -1,7 +1,7 @@
 #!/bin/bash
 
 [[ -z "${NIP_BASENAME}" ]] && NIP_BASENAME=$(basename "$0")
-NIP_CMD="${NIP_BASENAME} ${$@}"
+NIP_CMD="${NIP_BASENAME} $@"
 NIP_RUNTIME=podman
 NIP_RUN_DEFAULTS="run --rm --privileged -it --env-file $HOME/.nix/environment"
 NIP_IMAGE="localhost/nip:nip"
