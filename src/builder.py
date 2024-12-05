@@ -18,6 +18,7 @@ def execute(cmd):
 
 
 tag = os.environ.get("GIT_TAG", "gradle--1.8")
+gitTagVersion = tag.split("--")[1]
 info("[INFO] check GITHUB_RELEASE environment var")
 if os.environ.get("GITHUB_RELEASE", None) is not None:
     with urllib.request.urlopen(
@@ -104,7 +105,7 @@ else:
 
 
 # Write the file out again
-with open(f"{package}--{version}.info", "w") as file:
+with open(f"{package}--{gitTagVersion}.info", "w") as file:
     file.write(f"{package}, {version}, {keyName}, {date}, {hash}, {channel}\n")
 
 execute(
