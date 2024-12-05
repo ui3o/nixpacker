@@ -4,7 +4,7 @@
 NIP_CMD="${NIP_BASENAME} $@"
 NIP_RUNTIME=podman
 NIP_RUN_DEFAULTS="run --rm --privileged -it --env-file $HOME/.nix/environment"
-NIP_IMAGE="localhost/nip:nip"
+NIP_IMAGE="docker.io/ui3o/nixpacker:nip"
 [ -f ~/.config/nip/.bashrc ] && source ~/.config/nip/.bashrc
 
 [ ! -f ~/.ssh/id_rsa ] && ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ""
