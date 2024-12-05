@@ -21,5 +21,5 @@ echo "USER=root" >> ~/.nix/environment
 echo "OS_USER=$USER" >> ~/.nix/environment
 echo "OS_HOME=$HOME" >> ~/.nix/environment
 [[ ! -z "${NIP_DEBUG}" ]] && NIP_RUN_DEFAULTS="${NIP_RUN_DEFAULTS} --entrypoint bash"
-[[ ! -z "${NIP_DEBUG}" ]] && $NIP_CMD=""
+[[ ! -z "${NIP_DEBUG}" ]] && NIP_CMD=""
 $NIP_RUNTIME $NIP_RUN_DEFAULTS -v $HOME:/root -v /tmp:/tmp $NIP_EXTRA $NIP_IMAGE $NIP_CMD

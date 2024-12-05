@@ -8,6 +8,8 @@ import hashlib
 # print(sys.argv)
 # print(f"NIP_INSTALL is {os.environ.get('NIP_INSTALL', None)}")
 
+generationPath = ""
+
 
 def warn(msg: str):
     print(f"[WARN] {msg}")
@@ -22,6 +24,10 @@ def info(msg: str):
 def execute(cmd):
     # info(f"[RUN] {cmd}")
     subprocess.run(cmd, shell=True)
+
+
+def pathNormalizer(name: str) -> str:
+    return name.replace("+", "\\+")
 
 
 def imagePull(tags: list[str]):
@@ -40,11 +46,17 @@ def imagePull(tags: list[str]):
 def createGeneration(
     tags: list[str], defaults: dict[str, str], osBindings: dict[str, str]
 ):
+    global generationPath
     # check if docker image was pulled
     defToJson = json.dumps(tags) + json.dumps(defaults) + json.dumps(osBindings)
     osHome = os.environ.get("OS_HOME", None)
     md5sum = hashlib.md5(defToJson.encode("utf-8")).hexdigest()
     generationPath = os.path.expanduser(f"~/.nix/generations/{md5sum}")
+    # create osBindings on host
+    execute(f"ln -snf {osHome}/.nix/generations/{md5sum}/osBindings /root/.nix/bin")
+    # create generation link in container
+    execute(f"ln -snf {generationPath} /nix/store")
+
     if os.path.isdir(generationPath) is False:
         info("create generation")
         imagePull(tags)
@@ -57,10 +69,12 @@ def createGeneration(
             if len(versionArray) == 2:
                 endOfPath = versionArray[1]
             allVersionRegex = re.compile(r".{32}-" + key + r"-.+" + f"{endOfPath}$")
-            taggedVersionRegex = re.compile(r".{32}-" + f"{key}-{version}{endOfPath}$")
+            taggedVersionRegex = re.compile(
+                r".{32}-" + f"{key}-{pathNormalizer(version)}{endOfPath}$"
+            )
             taggedHashedPath = ""
             for item in os.listdir(generationPath):
-                if allVersionRegex.match(item) and taggedVersionRegex.match(item):
+                if taggedVersionRegex.match(item):
                     taggedHashedPath = item
                     info(f"add to env file this hashed path: {taggedHashedPath}")
                     with open(f"{generationPath}/paths", "a") as f:
@@ -72,17 +86,21 @@ def createGeneration(
                 currentVersion = "-".join(
                     item.replace(endOfPath, "").split("-")[1:]
                 ).replace(f"{key}-", "")
-                if allVersionRegex.match(item):
-                    if taggedVersionRegex.match(item) is None:
-                        if len(taggedHashedPath) > 0:
-                            info(
-                                f"set {key} version: {currentVersion} -> {version} ({item} -> {taggedHashedPath})"
-                            )
-                            execute(f"ln -sf {taggedHashedPath} /nix/store/{item}")
-                        else:
-                            warn(
-                                f"can not set {key} version: {currentVersion} -> {version} ({item} -> {taggedHashedPath})"
-                            )
+                if (
+                    allVersionRegex.match(item)
+                    and taggedVersionRegex.match(item) is None
+                ):
+                    if len(taggedHashedPath) > 0:
+                        info(
+                            f"set {key} version: {currentVersion} -> {version} ({item} -> {taggedHashedPath})"
+                        )
+                        execute(
+                            f"ln -snf {pathNormalizer(taggedHashedPath)} /nix/store/{pathNormalizer(item)}"
+                        )
+                    else:
+                        warn(
+                            f"can not set {key} version: {currentVersion} -> {version} ({item} -> {taggedHashedPath})"
+                        )
         # if the new generation create have to make new osBindings
         info("create osBindings into generation folder")
         execute(f"mkdir -p {generationPath}/osBindings")
@@ -94,11 +112,6 @@ def createGeneration(
                 f.write(f"export NIP_BASENAME={value}\n")
                 f.write("nip $@\n")
             execute(f"chmod ugo+x {generationPath}/osBindings/{key}")
-
-    # create osBindings on host
-    execute(f"ln -sf {osHome}/.nix/generations/{md5sum}/osBindings /root/.nix/bin")
-    # create generation link in container
-    execute(f"ln -sf {generationPath} /nix/store")
 
 
 def preCheck():
@@ -122,6 +135,7 @@ def preCheck():
 
 if sys.argv[1] == "nip":
     preCheck()
+    info(f"current generation is {generationPath.replace("/root", "~")}")
 else:
     preCheck()
 
