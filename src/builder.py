@@ -4,7 +4,10 @@ import re
 import subprocess
 from typing import Callable
 import urllib.request
-import base64
+import json
+
+with open("/tag.info.json", "r") as JSON:
+    json_dict = json.load(JSON)
 
 
 def info(msg: str):
@@ -17,10 +20,10 @@ def execute(cmd):
     subprocess.run(cmd, shell=True)
 
 
-tag = os.environ.get("GIT_TAG", "gradle--1.8--MS44")
+tag = os.environ.get("GIT_TAG", "gradle--1.8")
 package = tag.split("--")[0]
 dockerVersion = tag.split("--")[1]
-nixVersion = base64.b64decode(tag.split("--")[2]).decode("utf-8")
+nixVersion = json_dict[tag]
 info(
     f"[INFO] tag is {tag} and package is {package} with version {nixVersion}/{dockerVersion}"
 )
