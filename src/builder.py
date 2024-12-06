@@ -4,7 +4,7 @@ import re
 import subprocess
 from typing import Callable
 import urllib.request
-import json
+import base64
 
 
 def info(msg: str):
@@ -17,19 +17,13 @@ def execute(cmd):
     subprocess.run(cmd, shell=True)
 
 
-tag = os.environ.get("GIT_TAG", "gradle--1.8")
-gitTagVersion = tag.split("--")[1]
-info("[INFO] check GITHUB_RELEASE environment var")
-if os.environ.get("GITHUB_RELEASE", None) is not None:
-    with urllib.request.urlopen(
-        f"https://api.github.com/repos/ui3o/nixpacker/releases/tags/{tag}"
-    ) as url:
-        data = json.load(url)
-        tag = data["name"]
-        info(f"[INFO] collect tag from github {tag}")
+tag = os.environ.get("GIT_TAG", "gradle--1.8--MS44")
 package = tag.split("--")[0]
-version = tag.split("--")[1]
-info(f"[INFO] tag is {tag} and package is {package} with version {version}/{gitTagVersion}")
+dockerVersion = tag.split("--")[1]
+nixVersion = base64.b64decode(tag.split("--")[2])
+info(
+    f"[INFO] tag is {tag} and package is {package} with version {nixVersion}/{dockerVersion}"
+)
 date = ""
 keyName = ""
 hash = ""
@@ -63,7 +57,7 @@ def chFinder(criteria: Callable[[str], bool]):
             else:
                 list = lookup.split("<tbody>")[1].split("</tbody>")[0].split("<tr")[1:]
                 try:
-                    el = [x for x in list if x.find(f"<td>{version}</td>") > -1][0]
+                    el = [x for x in list if x.find(f"<td>{nixVersion}</td>") > -1][0]
                     # info(el)
                     hash = el.split("revision=")[1].split("&amp;")[0]
                     keyName = el.split("keyName=")[1].split("&amp;")[0]
@@ -74,7 +68,7 @@ def chFinder(criteria: Callable[[str], bool]):
                     )
                 except IndexError:
                     info(
-                        f"[ERROR] No {package} package with {version} version found on {chName} channel!"
+                        f"[ERROR] No {package} package with {nixVersion} version found on {chName} channel!"
                     )
 
 
@@ -98,15 +92,15 @@ else:
 
 
 if len(hash) == 0:
-    info(f"[ERROR] No {package} package found with {version} version!")
+    info(f"[ERROR] No {package} package found with {nixVersion} version!")
     os._exit(1)
 else:
     info(f"[INFO] meta found on {channel} channel: {keyName} {date} {hash}")
 
 
 # Write the file out again
-with open(f"{package}--{gitTagVersion}.info", "w") as file:
-    file.write(f"{package}, {version}, {keyName}, {date}, {hash}, {channel}\n")
+with open(f"{package}--{dockerVersion}.info", "w") as file:
+    file.write(f"{package}, {nixVersion}, {keyName}, {date}, {hash}, {channel}\n")
 
 execute(
     f"nix bundle --bundler github:NixOS/bundlers#toDEB -o debpack -f https://github.com/NixOS/nixpkgs/archive/{hash}.tar.gz {package}"

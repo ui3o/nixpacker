@@ -1,7 +1,6 @@
 FROM docker.io/nixos/nix:latest AS builder
 
 ARG GIT_TAG
-ARG GITHUB_RELEASE
 WORKDIR /root
 
 COPY ./src/builder.py /root
