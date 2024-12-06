@@ -20,7 +20,7 @@ def execute(cmd):
 tag = os.environ.get("GIT_TAG", "gradle--1.8--MS44")
 package = tag.split("--")[0]
 dockerVersion = tag.split("--")[1]
-nixVersion = base64.b64decode(tag.split("--")[2])
+nixVersion = base64.b64decode(tag.split("--")[2]).decode("utf-8")
 info(
     f"[INFO] tag is {tag} and package is {package} with version {nixVersion}/{dockerVersion}"
 )
