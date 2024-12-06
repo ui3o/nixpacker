@@ -6,8 +6,10 @@ config: Config = {
     ],
     "defaults": {
         "hello": "2.10",
+        "openjdk": "21.0.3+9",
     },
     "osBindings": {
         "hello": "hello",
+        "openjdk": "@",
     },
 }

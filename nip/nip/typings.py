@@ -29,4 +29,7 @@ class Config(TypedDict, total=False):
     the **value** is the name of executable file in **container**
 
     this type of definition fixes the duplication
+
+    the **key** can be a key from defaults with `@` value which means bind all 
+    program from  `program/bin` folder
     """

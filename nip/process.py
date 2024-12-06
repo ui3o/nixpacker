@@ -10,6 +10,7 @@ import hashlib
 
 generationPath = ""
 osHome = os.environ.get("OS_HOME", "")
+defaultsMap: dict[str, str] = {}
 
 
 def warn(msg: str):
@@ -29,6 +30,15 @@ def execute(cmd):
 
 def pathNormalizer(name: str) -> str:
     return name.replace("+", "\\+")
+
+
+def genOsProgram(generationPath: str, osName: str, containerName: str):
+    info(f"create program on host os: {osName}")
+    with open(f"{generationPath}/osBindings/{osName}", "w") as f:
+        f.write("#!/bin/bash\n")
+        f.write(f"export NIP_BASENAME={containerName}\n")
+        f.write("nip $@\n")
+    execute(f"chmod ugo+x {generationPath}/osBindings/{osName}")
 
 
 def imagePull(tags: list[str]):
@@ -76,6 +86,7 @@ def createGeneration(
             for item in os.listdir(generationPath):
                 if taggedVersionRegex.match(item):
                     taggedHashedPath = item
+                    defaultsMap[key] = f"/nix/warehouse/{taggedHashedPath}"
                     info(f"add to env file this hashed path: {taggedHashedPath}")
                     with open(f"{generationPath}/paths", "a") as f:
                         f.write(
@@ -106,12 +117,15 @@ def createGeneration(
         execute(f"mkdir -p {generationPath}/osBindings")
         execute(f"cp /template/nip.sh {generationPath}/osBindings/nip")
         for key, value in osBindings.items():
-            info(f"create program on host os: {key}")
-            with open(f"{generationPath}/osBindings/{key}", "w") as f:
-                f.write("#!/bin/bash\n")
-                f.write(f"export NIP_BASENAME={value}\n")
-                f.write("nip $@\n")
-            execute(f"chmod ugo+x {generationPath}/osBindings/{key}")
+            if value == "@":
+                defProgram = defaultsMap.get(key)
+                if defProgram is not None:
+                    for item in os.listdir(f"{defProgram}/bin"):
+                        genOsProgram(generationPath, item, item)
+                else:
+                    warn(f"in the config defaults has no key: {key}")
+            else:
+                genOsProgram(generationPath, key, value)
 
 
 def preCheck():
@@ -145,7 +159,9 @@ else:
     if osPWD.find(osHome) > -1:
         cwd = osPWD.replace(osHome, "/root")
     else:
-        warn("only home folder mount supported! for tmp work use ~/tmp or other folder...")
+        warn(
+            "only home folder mount supported! for tmp work use ~/tmp or other folder..."
+        )
 
     # exit 78 means eval script from /script file
     with open("/script", "w") as f:
