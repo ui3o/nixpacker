@@ -32,7 +32,16 @@ jobs:
           GIT_TAG=${{steps.tag.outputs.tag}}
           GITHUB_RELEASE=true
         tags: ui3o/nixpacker:${{steps.tag.outputs.tag}}
-        platforms: linux/amd64,linux/arm64       
+        platforms: linux/amd64,linux/arm64
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@0.29.0
+      with:
+        image-ref: 'docker.io/ui3o/nixpacker:${{steps.tag.outputs.tag}}'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'        
     - name: "Docker Hub Description"
       uses: peter-evans/dockerhub-description@v3
       with:
