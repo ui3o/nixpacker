@@ -9,7 +9,7 @@ import hashlib
 # print(f"NIP_INSTALL is {os.environ.get('NIP_INSTALL', None)}")
 
 generationPath = ""
-osHome = os.environ.get("OS_HOME", "")
+homeFolder = os.environ.get("HOME", "")
 defaultsMap: dict[str, str] = {}
 
 
@@ -48,8 +48,7 @@ def imagePull(tags: list[str]):
         image = f"docker.io/ui3o/nixpacker:{tag}"
         if os.path.exists(os.path.expanduser(f"~/.nix/info/{tag}.info")) is False:
             info(f"pull and run docker image: {image}")
-            execute(f"{podman} pull {image}")
-            execute(f"{podman} run --privileged --rm -v $OS_HOME/.nix:/nix -it {image}")
+            execute(f"{podman} run --pull=always --privileged --rm -v $HOME/.nix:/nix -it {image}")
         else:
             info(f"this docker image already pulled: {image}")
 
@@ -57,13 +56,13 @@ def imagePull(tags: list[str]):
 def createGeneration(
     tags: list[str], defaults: dict[str, str], osBindings: dict[str, str]
 ):
-    global generationPath, osHome
+    global generationPath, homeFolder
     # check if docker image was pulled
     defToJson = json.dumps(tags) + json.dumps(defaults) + json.dumps(osBindings)
     md5sum = hashlib.md5(defToJson.encode("utf-8")).hexdigest()
     generationPath = os.path.expanduser(f"~/.nix/generations/{md5sum}")
     # create osBindings on host
-    execute(f"ln -snf {osHome}/.nix/generations/{md5sum}/osBindings /root/.nix/bin")
+    execute(f"ln -snf {homeFolder}/.nix/generations/{md5sum}/osBindings {homeFolder}/.nix/bin")
     # create generation link in container
     execute(f"ln -snf {generationPath} /nix/store")
 
@@ -149,16 +148,13 @@ def preCheck():
 
 if sys.argv[1].startswith("nip"):
     preCheck()
-    info(f"current generation is {generationPath.replace("/root", "~")}")
+    info(f"current generation is {generationPath}")
 else:
     preCheck()
 
     # TODO cwd resolve
-    osPWD = os.environ.get("OS_PWD", "None")
-    cwd = ""
-    if osPWD.find(osHome) > -1:
-        cwd = osPWD.replace(osHome, "/root")
-    else:
+    cwd = os.environ.get("PWD", "None")
+    if cwd.find(homeFolder) == -1:
         warn(
             "only home folder mount supported! for tmp work use ~/tmp or other folder..."
         )
@@ -168,6 +164,5 @@ else:
         f.write("#!/bin/bash\n")
         f.write(f"export PATH=/template:{os.environ.get("PATH", None)}\n")
         f.write("source /nix/store/paths\n")
-        f.write(f"cd {cwd}\n")
         f.write(" ".join(sys.argv[1:]) + "\n")
     os._exit(78)

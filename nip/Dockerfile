@@ -2,8 +2,7 @@ FROM alpine:latest
 
 RUN apk add bash python3 htop openssh
 COPY ./ /template
-RUN mv /template/nip /template/nip_tmp
-RUN mkdir /nix && ln -sf /root/.nix/warehouse /nix/warehouse
-RUN ln -sf /root/.config/nip /template/nip
+RUN mv /template/nip /template/nip_tmp && ln -sf /nip_cfg /template/nip
+RUN mkdir /nix && rm -rf /root
 
 ENTRYPOINT [ "/template/entrypoint.sh"]

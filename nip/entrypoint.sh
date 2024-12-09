@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ln -sf ~/.config/nip /nip_cfg
+ln -sf ~/.nix/warehouse /nix/warehouse
 python3 /template/process.py $@
 status=$?
 

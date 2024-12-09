@@ -3,8 +3,9 @@
 [[ -z "${NIP_BASENAME}" ]] && NIP_BASENAME=$(basename "$0")
 NIP_CMD="${NIP_BASENAME} $@"
 NIP_RUNTIME=podman
-NIP_RUN_DEFAULTS="run --rm --privileged -it --env-file $HOME/.nix/environment"
-NIP_RUN_DEFAULTS="${NIP_RUN_DEFAULTS} -v $HOME:/root"
+NIP_RUN_DEFAULTS="run --network=host --rm --privileged -it --env-file $HOME/.nix/environment"
+NIP_RUN_DEFAULTS="${NIP_RUN_DEFAULTS} -v $HOME:$HOME"
+[[ $PWD == $HOME* ]] && NIP_RUN_DEFAULTS="${NIP_RUN_DEFAULTS} --workdir $PWD"
 NIP_IMAGE="docker.io/ui3o/nixpacker:nip"
 [ -f ~/.config/nip/.bashrc ] && source ~/.config/nip/.bashrc
 
@@ -17,11 +18,8 @@ NIP_IMAGE="docker.io/ui3o/nixpacker:nip"
 [ ! -d ~/.nix ] && mkdir -p ~/.nix
 env > ~/.nix/environment
 echo "PATH=$PATH" > ~/.ssh/environment
-echo "HOME=/root" >> ~/.nix/environment
 echo "USER=root" >> ~/.nix/environment
 echo "OS_USER=$USER" >> ~/.nix/environment
-echo "OS_HOME=$HOME" >> ~/.nix/environment
-echo "OS_PWD=$PWD" >> ~/.nix/environment
 [[ ! -z "${NIP_DEBUG}" ]] && NIP_RUN_DEFAULTS="${NIP_RUN_DEFAULTS} --entrypoint bash"
 [[ ! -z "${NIP_DEBUG}" ]] && NIP_CMD=""
 $NIP_RUNTIME $NIP_RUN_DEFAULTS $NIP_EXTRA $NIP_IMAGE $NIP_CMD
