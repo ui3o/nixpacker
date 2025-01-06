@@ -12,4 +12,5 @@ config: Config = {
         "hello": "hello",
         "openjdk": "@",
     },
+    "ports": [""]
 }

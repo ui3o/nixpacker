@@ -69,9 +69,9 @@ KbdInteractiveAuthentication no
 # and KbdInteractiveAuthentication to 'no'.
 UsePAM no
 
-#AllowAgentForwarding yes
-#AllowTcpForwarding yes
-#GatewayPorts no
+AllowAgentForwarding yes
+AllowTcpForwarding yes
+GatewayPorts yes
 #X11Forwarding no
 #X11DisplayOffset 10
 #X11UseLocalhost yes
