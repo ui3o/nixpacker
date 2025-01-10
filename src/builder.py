@@ -106,7 +106,7 @@ with open(f"{package}--{dockerVersion}.info", "w") as file:
     file.write(f"{package}, {nixVersion}, {keyName}, {date}, {hash}, {channel}\n")
 
 execute(
-    f"nix bundle --bundler github:NixOS/bundlers#toDEB -o debpack -f https://github.com/NixOS/nixpkgs/archive/{hash}.tar.gz {package}"
+    f"nix bundle --bundler github:NixOS/bundlers#toDEB -o debpack -f https://github.com/NixOS/nixpkgs/archive/{hash}.tar.gz {keyName}"
 )
 execute("/root/.nix-profile/bin/dpkg -x /root/debpack/*.deb /tmp")
 
