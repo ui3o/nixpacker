@@ -4,7 +4,6 @@ ARG GIT_TAG
 WORKDIR /root
 
 COPY ./src/builder.py /root
-COPY ./tag.info.json /
 
 RUN export PATH=~/.nix-profile/bin:$PATH
 RUN echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
