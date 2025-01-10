@@ -4,10 +4,6 @@ import re
 import subprocess
 from typing import Callable
 import urllib.request
-import json
-
-with open("/tag.info.json", "r") as JSON:
-    json_dict = json.load(JSON)
 
 
 def info(msg: str):
@@ -20,13 +16,11 @@ def execute(cmd):
     subprocess.run(cmd, shell=True)
 
 
-tag = os.environ.get("GIT_TAG", "gradle--1.8")
+tag = os.environ.get("GIT_TAG", "openjdk--11.0.23.9")
 package = tag.split("--")[0]
 dockerVersion = tag.split("--")[1]
-nixVersion = json_dict[tag]
-info(
-    f"[INFO] tag is {tag} and package is {package} with version {nixVersion}/{dockerVersion}"
-)
+nixVersion = ""
+info(f"[INFO] tag is {tag} and package is {package} with version {dockerVersion}")
 date = ""
 keyName = ""
 hash = ""
@@ -34,7 +28,7 @@ channel = ""
 
 
 def chFinder(criteria: Callable[[str], bool]):
-    global hash, keyName, date, channel
+    global hash, keyName, date, channel, nixVersion
     contents: str = (
         urllib.request.urlopen("https://lazamar.co.uk/nix-versions/")
         .read()
@@ -59,20 +53,26 @@ def chFinder(criteria: Callable[[str], bool]):
                 info(f"[ERROR] No {package} package found on {chName} channel!")
             else:
                 list = lookup.split("<tbody>")[1].split("</tbody>")[0].split("<tr")[1:]
-                try:
-                    el = [x for x in list if x.find(f"<td>{nixVersion}</td>") > -1][0]
-                    # info(el)
-                    hash = el.split("revision=")[1].split("&amp;")[0]
-                    keyName = el.split("keyName=")[1].split("&amp;")[0]
-                    date = el.split("</a></td><td>")[1].split("</td></tr>")[0]
-                    channel = chName
+                for el in list:
+                    r = re.compile(dockerVersion)
+                    v = el.split("</td><td>")
+                    # info(v[1])
+                    if r.fullmatch(v[1]) is not None:
+                        # info(el)
+                        nixVersion = v[1]
+                        hash = el.split("revision=")[1].split("&amp;")[0]
+                        keyName = el.split("keyName=")[1].split("&amp;")[0]
+                        date = el.split("</a></td><td>")[1].split("</td></tr>")[0]
+                        channel = chName
+                        info(
+                            f"[INFO] meta found on {chName} channel: {keyName} {nixVersion} {date} {hash}"
+                        )
+                        return
+                if len(hash) == 0:
                     info(
-                        f"[INFO] meta found on {chName} channel: {keyName} {date} {hash}"
+                        f"[ERROR] No {package} package with {dockerVersion} version found on {chName} channel!"
                     )
-                except IndexError:
-                    info(
-                        f"[ERROR] No {package} package with {nixVersion} version found on {chName} channel!"
-                    )
+                    return
 
 
 def armChNameChecker(ch: str) -> bool:
@@ -95,7 +95,9 @@ else:
 
 
 if len(hash) == 0:
-    info(f"[ERROR] No {package} package found with {nixVersion} version!")
+    info(
+        f"[ERROR] No {package} package found with {dockerVersion}/{nixVersion} version!"
+    )
     os._exit(1)
 else:
     info(f"[INFO] meta found on {channel} channel: {keyName} {date} {hash}")
@@ -103,7 +105,9 @@ else:
 
 # Write the file out again
 with open(f"{package}--{dockerVersion}.info", "w") as file:
-    file.write(f"{package}, {nixVersion}, {keyName}, {date}, {hash}, {channel}\n")
+    file.write(
+        f"{package}, {nixVersion}, {dockerVersion}, {keyName}, {date}, {hash}, {channel}\n"
+    )
 
 execute(
     f"nix bundle --bundler github:NixOS/bundlers#toDEB -o debpack -f https://github.com/NixOS/nixpkgs/archive/{hash}.tar.gz {keyName}"
