@@ -1,4 +1,4 @@
-Port 1222
+#Port 1222
 #AddressFamily any
 #ListenAddress 0.0.0.0
 #ListenAddress ::

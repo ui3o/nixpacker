@@ -36,6 +36,9 @@ def genOsProgram(generationPath: str, osName: str, containerName: str):
     info(f"create program on host os: {osName}")
     with open(f"{generationPath}/osBindings/{osName}", "w") as f:
         f.write("#!/bin/bash\n")
+        f.write('ARGS=""\n')
+        f.write("for v in \"$@\" ;do ARGS+=$v && ARGS+='____';done\n")
+        f.write("export NIP_PROGRAM_ARGS=$ARGS\n")
         f.write(f"export NIP_BASENAME={containerName}\n")
         f.write("nip $@\n")
     execute(f"chmod ugo+x {generationPath}/osBindings/{osName}")
@@ -48,21 +51,36 @@ def imagePull(tags: list[str]):
         image = f"docker.io/ui3o/nixpacker:{tag}"
         if os.path.exists(os.path.expanduser(f"~/.nix/info/{tag}.info")) is False:
             info(f"pull and run docker image: {image}")
-            execute(f"{podman} run --pull=always --privileged --rm -v $HOME/.nix:/nix -it {image}")
+            execute(
+                f"{podman} run --pull=always --privileged --rm -v $HOME/.nix:/nix -it {image}"
+            )
         else:
             info(f"this docker image already pulled: {image}")
 
 
 def createGeneration(
-    tags: list[str], defaults: dict[str, str], osBindings: dict[str, str]
+    tags: list[str],
+    defaults: dict[str, str],
+    osBindings: dict[str, str],
+    ports: list[str],
 ):
     global generationPath, homeFolder
     # check if docker image was pulled
-    defToJson = json.dumps(tags) + json.dumps(defaults) + json.dumps(osBindings)
+    defToJson = (
+        json.dumps(tags)
+        + json.dumps(defaults)
+        + json.dumps(osBindings)
+        + json.dumps(ports)
+    )
     md5sum = hashlib.md5(defToJson.encode("utf-8")).hexdigest()
     generationPath = os.path.expanduser(f"~/.nix/generations/{md5sum}")
     # create osBindings on host
-    execute(f"ln -snf {homeFolder}/.nix/generations/{md5sum}/osBindings {homeFolder}/.nix/bin")
+    execute(
+        f"ln -snf {homeFolder}/.nix/generations/{md5sum}/osBindings {homeFolder}/.nix/bin"
+    )
+    execute(
+        f"ln -snf {homeFolder}/.nix/generations/{md5sum}/osLibs {homeFolder}/.nix/osLibs"
+    )
     # create generation link in container
     execute(f"ln -snf {generationPath} /nix/store")
 
@@ -119,8 +137,20 @@ def createGeneration(
             if value == "@":
                 defProgram = defaultsMap.get(key)
                 if defProgram is not None:
-                    for item in os.listdir(f"{defProgram}/bin"):
-                        genOsProgram(generationPath, item, item)
+                    ln = defProgram.replace(
+                        "/nix", f"{generationPath.split('/.nix')[0]}/.nix"
+                    )
+                    libPath = f"{generationPath}/osLibs/{key}-{defaults.get(key)}"
+                    execute(f"mkdir -p {libPath}")
+                    for defItem in os.listdir(defProgram):
+                        info(f"osLib link create for: {libPath}/{defItem}")
+                        if defItem != "bin":
+                            info(f"ln -snf {ln}/{defItem} {libPath}/{defItem}")
+                            execute(f"ln -snf {ln} {libPath}/{defItem}")
+                    execute(f"ln -snf {generationPath}/osBindings {libPath}/bin")
+
+                    for binItem in os.listdir(f"{defProgram}/bin"):
+                        genOsProgram(generationPath, binItem, binItem)
                 else:
                     warn(f"in the config defaults has no key: {key}")
             else:
@@ -142,7 +172,10 @@ def preCheck():
 
     # create link generation
     createGeneration(
-        config.config["tags"], config.config["defaults"], config.config["osBindings"]
+        config.config["tags"],
+        config.config["defaults"],
+        config.config["osBindings"],
+        config.config["ports"],
     )
 
 
@@ -162,7 +195,15 @@ else:
     # exit 78 means eval script from /script file
     with open("/script", "w") as f:
         f.write("#!/bin/bash\n")
-        f.write(f"export PATH=/template:{os.environ.get("PATH", None)}\n")
+        f.write(f"export PATH=/template:{os.environ.get('PATH', None)}\n")
         f.write("source /nix/store/paths\n")
-        f.write(" ".join(sys.argv[1:]) + "\n")
+        f.write("$NIP_BASENAME ")
+        # f.write("echo ")
+        args = os.environ.get("NIP_PROGRAM_ARGS", "").split("____")
+        for a in args:
+            if len(a) == 0:
+                f.write("\n")
+            else:
+                f.write(f'"{a}" ')
+        # f.write("bash")
     os._exit(78)

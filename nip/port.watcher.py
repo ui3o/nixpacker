@@ -7,9 +7,10 @@ import re
 import threading
 import nip.config as config
 
-sshUri = "ssh://$OS_USER@host.containers.internal:1222"
+sshUri = "ssh://$OS_USER@host.containers.internal:$NIP_SSHD_PORT"
 ssh = f"ssh -t -o StrictHostKeyChecking=no -o LogLevel=QUIET {sshUri}"
 lsof = "lsof -i -P -n"
+sshdPort = int(os.environ.get("NIP_SSHD_PORT", "1222"))
 
 
 def warn(msg: str):
@@ -38,7 +39,7 @@ def lsofChecker(cmd: str, openedList: str) -> list[str]:
             if line.endswith("(listen)"):
                 p = int(portRegex.sub(r"\g<2>", line).split(" ")[0])
                 # info(f"line is: {line}")
-                if str(p) not in openedList:
+                if str(p) not in openedList and p != sshdPort:
                     for r in config.config["ports"]:
                         if "-" in r:
                             fromTo = r.split("-")
