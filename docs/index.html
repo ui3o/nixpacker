@@ -98,9 +98,7 @@
           ).textContent = `Input 1: ${input1} | Input 2: ${input2}`;
         });
       async function init() {
-        var f = await fetch(
-          "https://lazamar.co.uk/nix-versions/"
-        );
+        var f = await fetch("https://lazamar.co.uk/nix-versions/");
         var a = await f.text();
         console.log(a);
       }

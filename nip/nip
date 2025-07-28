@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+# todo
+import sys
+import os.path
+import subprocess
+import json
+import hashlib
+
+sys.dont_write_bytecode = True
+sys.path.append(os.path.expanduser("~/.config/nip"))
+import config  # noqa: E402
+
+
+# print(sys.argv)
+NIP_INSTALL = os.environ.get("NIP_INSTALL", "/nix")
+print(f"NIP_INSTALL is {NIP_INSTALL}")
+
+generationPath = ""
+homeFolder = os.environ.get("HOME", "")
+defaultsMap: dict[str, str] = {}
+
+
+def info(msg: str):
+    print(f"[INFO] {msg}")
+    sys.stdout.flush()
+
+
+def execute(cmd):
+    # info(f"[RUN] {cmd}")
+    subprocess.run(cmd, shell=True)
+
+
+def imagePull(tags: list[str]):
+    # check if docker image was pulled
+    podman = "podman run --pull=always --privileged"
+    # podman = "podman run --privileged"
+    for tag in tags:
+        # image = f"localhost/local-nixpacker:{tag}"
+        image = f"docker.io/ui3o/nixpacker:{tag}"
+        if (
+            os.path.exists(os.path.expanduser(f"~/.nip/warehouse/nip/{tag}.info"))
+            is False
+        ):
+            info(f"pull and run docker image: {image}")
+            execute(f"{podman} --rm -v $HOME/.nip/warehouse:/warehouse -it {image}")
+        else:
+            info(f"this docker image already pulled: {image}")
+
+
+def createWarehouseLink(warehouse: str, generationStorePath: str):
+    # generate symlinks to /nix/store
+    packs = [f.name for f in os.scandir(warehouse) if f.is_dir()]
+    for dirname in list(packs):
+        print("[INFO] generate symlink for: ", dirname)
+        execute(f"ln -snf {warehouse}/{dirname} {generationStorePath}/{dirname}")
+
+
+def createBinLinks(generationPath: str, base: str):
+    packs = [f.name for f in os.scandir(f"{generationPath}/store/{base}/bin")]
+    for bin in list(packs):
+        print("[INFO] generate binary symlink for: ", bin)
+        execute(
+            f"ln -snf {generationPath}/store/{base}/bin/{bin} {generationPath}/store/bin/{bin}"
+        )
+
+
+def createGeneration(
+    tags: list[str],
+    defaults: list[list[str]],
+) -> str:
+    global generationPath, homeFolder
+    # check if docker image was pulled
+    defToJson = json.dumps(tags) + json.dumps(defaults)
+    md5sum = hashlib.md5(defToJson.encode("utf-8")).hexdigest()
+    generationPath = os.path.expanduser(f"~/.nip/generations/{md5sum}")
+    warehouse = os.path.expanduser("~/.nip/warehouse")
+
+    # create generation link in container
+    execute("mkdir -p ~/.nip/generations")
+    execute(f"ln -snf {generationPath}/store {NIP_INSTALL}/store")
+
+    if os.path.isdir(generationPath) is False:
+        info("create generation")
+        imagePull(tags)
+        execute(f"mkdir -p {generationPath}/store/bin")
+        createWarehouseLink(warehouse, f"{generationPath}/store")
+
+        for default in defaults:
+            base = default[0]
+            createBinLinks(generationPath, base)
+            for d in default[1:]:
+                print("[INFO] overriding symlink for: ", d)
+                execute(
+                    f"ln -snf {generationPath}/store/{base} {generationPath}/store/{d}"
+                )
+    return md5sum
+
+
+# create link generation
+md5sum = createGeneration(
+    config.config["tags"],
+    config.config["defaults"],
+)
+
+info(f"current generation is {md5sum}")

@@ -3,7 +3,7 @@ FROM docker.io/nixos/nix:latest AS builder
 ARG GIT_TAG
 WORKDIR /root
 
-COPY ./src/builder.py /root
+COPY ./builder.py /root
 
 RUN export PATH=~/.nix-profile/bin:$PATH
 RUN echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
@@ -13,8 +13,7 @@ RUN python3 /root/builder.py
 
 
 FROM alpine:latest
-RUN apk add python3
-COPY --from=builder /tmp/nix /.nix
-COPY --from=builder /root/*.info /.nix
-COPY ./src/entrypoint.py /entrypoint.py
-ENTRYPOINT [ "python3", "/entrypoint.py"]
+RUN apk add bash && mkdir /warehouse -p /.warehouse/nip
+COPY --from=builder /tmp/nix/store /.warehouse
+COPY --from=builder /root/*.info /.warehouse/nip
+ENTRYPOINT [ "cp", "-a", "/.warehouse/.", "/warehouse"]
