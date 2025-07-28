@@ -16,6 +16,11 @@ def msg(msg: str, isError: bool = False):
     sys.stdout.flush()
 
 
+def execute(cmd):
+    # info(f"[RUN] {cmd}")
+    subprocess.run(cmd, shell=True)
+
+
 NIP_INSTALL = os.environ.get("NIP_INSTALL", "/nix")
 WAREHOUSE_PATH = os.path.expanduser("~/.nip/warehouse")
 CONFIG_PATH = os.path.expanduser("~/.config/nip")
@@ -23,14 +28,11 @@ sys.dont_write_bytecode = True
 sys.path.append(CONFIG_PATH)
 msg(f"NIP_INSTALL is {NIP_INSTALL}")
 if not os.path.exists(CONFIG_PATH):
-    msg(f"CONFIG_PATH does not exist: {CONFIG_PATH}", isError=True)
-    sys.exit(1)
+    msg(f"CONFIG_PATH does not exist: {CONFIG_PATH}. Start to create!", isError=True)
+    execute(f"mkdir -p {CONFIG_PATH}")
+    execute(f"cp ~/.nip/warehouse/nip/config.py {CONFIG_PATH}/")
+    execute(f"cp ~/.nip/warehouse/nip/typings.py {CONFIG_PATH}/")
 import config  # noqa: E402
-
-
-def execute(cmd):
-    # info(f"[RUN] {cmd}")
-    subprocess.run(cmd, shell=True)
 
 
 def imagePull(tags: list[str]):
@@ -106,6 +108,7 @@ def createGeneration(
         execute(f"touch {generationPath}/store/nip/{md5sum}.hash")
 
     return md5sum
+
 
 execute(f"mkdir -p {NIP_INSTALL}")
 
