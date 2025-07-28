@@ -6,7 +6,7 @@ Build nix package into docker image
 # install
 
 * `podman run -it --rm -v $HOME:/root docker.io/ui3o/nixpacker:nip`
-* `export PATH="$HOME/.nip/warehouse/nip:$PATH"`
+* `export PATH="/nix/store/nip:$HOME/.nip/warehouse/nip:$PATH"`
 
 original:
  * **/nix/store/item-a** =use=> **/nix/store/item-b**

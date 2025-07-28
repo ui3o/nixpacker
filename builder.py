@@ -49,7 +49,11 @@ def chFinder(criteria: Callable[[str], bool]):
     )
     for ch in contents.split("option value=")[1:]:
         chName = ch.split('"')[1]
-        if len(hash) == 0 and criteria(chName):
+        if (
+            chName.endswith("-unstable") is False
+            and len(hash) == 0
+            and criteria(chName)
+        ):
             lookup: str = (
                 urllib.request.urlopen(
                     f"https://lazamar.co.uk/nix-versions/?channel={chName}&package={package}"

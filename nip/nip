@@ -30,17 +30,17 @@ def execute(cmd):
 
 def imagePull(tags: list[str]):
     # check if docker image was pulled
-    podman = "podman run --pull=always --privileged"
+    podman = "podman run --pull=always"
     # podman = "podman run --privileged"
     for tag in tags:
         # image = f"localhost/local-nixpacker:{tag}"
-        image = f"docker.io/ui3o/nixpacker:{tag}"
+        image = f"ui3o/nixpacker:{tag}"
         if (
             os.path.exists(os.path.expanduser(f"~/.nip/warehouse/nip/{tag}.info"))
             is False
         ):
             info(f"pull and run docker image: {image}")
-            execute(f"{podman} --rm -v $HOME/.nip/warehouse:/warehouse -it {image}")
+            execute(f"{podman} --rm -v $HOME/.nip/warehouse:/warehouse:Z -it {image}")
         else:
             info(f"this docker image already pulled: {image}")
 
