@@ -3,8 +3,14 @@ Build nix package into docker image
 
 # install
 
-1. install nip: ```podman run -it --rm -v $HOME:/root:Z ui3o/nixpacker:nip```
-2. add nip to path: ```export PATH="/nix/store/nip:$HOME/.nip/warehouse/nip:$PATH"```
+* *install nip*: 
+  ```
+  podman run -it --rm -v $HOME:/root:Z ui3o/nixpacker:nip
+  ```
+* *add nip to path*: 
+  ```
+  export PATH="/nix/store/nip:$HOME/.nip/warehouse/nip:$PATH"
+  ```
 
 
 # build steps
@@ -15,9 +21,18 @@ Build nix package into docker image
 
 # usage
 
-1. edit file in ```~/.config/nip/config.py```
-2. run ```nip``` 
-3. recommended warehouse browsing: `ls -1 .nip/warehouse | fzf`
+* *edit file in*
+  ```
+  ~/.config/nip/config.py
+  ```
+* *run* 
+  ```
+  nip
+  ``` 
+* *recommended warehouse browsing*
+  ```
+  ls -1 .nip/warehouse | fzf
+  ```
 
 original:
  * **/nix/store/item-a** =use=> **/nix/store/item-b**
