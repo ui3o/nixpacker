@@ -8,8 +8,11 @@ import json
 import hashlib
 
 
-def info(msg: str):
-    print(f"[INFO] {msg}")
+def msg(msg: str, isError: bool = False):
+    if isError:
+        print(f"[ERROR] {msg}")
+    else:
+        print(f"[INFO] {msg}")
     sys.stdout.flush()
 
 
@@ -18,9 +21,9 @@ WAREHOUSE_PATH = os.path.expanduser("~/.nip/warehouse")
 CONFIG_PATH = os.path.expanduser("~/.config/nip")
 sys.dont_write_bytecode = True
 sys.path.append(CONFIG_PATH)
-info(f"NIP_INSTALL is {NIP_INSTALL}")
+msg(f"NIP_INSTALL is {NIP_INSTALL}")
 if not os.path.exists(CONFIG_PATH):
-    info(f"[ERROR] CONFIG_PATH does not exist: {CONFIG_PATH}")
+    msg(f"CONFIG_PATH does not exist: {CONFIG_PATH}", isError=True)
     sys.exit(1)
 import config  # noqa: E402
 
@@ -41,24 +44,24 @@ def imagePull(tags: list[str]):
             os.path.exists(os.path.expanduser(f"~/.nip/warehouse/nip/{tag}.info"))
             is False
         ):
-            info(f"pull and run docker image: {image}")
+            msg(f"pull and run docker image: {image}")
             execute(f"{podman} --rm -v $HOME/.nip/warehouse:/warehouse:Z -it {image}")
         else:
-            info(f"this docker image already pulled: {image}")
+            msg(f"this docker image already pulled: {image}")
 
 
 def createWarehouseLink(warehouse: str, generationStorePath: str):
     # generate symlinks to /nix/store
     packs = [f.name for f in os.scandir(warehouse) if f.is_dir() and f.name != "nip"]
     for dirname in list(packs):
-        info(f"generate symlink for: {dirname}")
+        msg(f"generate symlink for: {dirname}")
         execute(f"ln -snf {warehouse}/{dirname} {generationStorePath}/{dirname}")
 
 
 def createBinLinks(generationPath: str, base: str):
     packs = [f.name for f in os.scandir(f"{generationPath}/store/{base}/bin")]
     for bin in list(packs):
-        info(f"generate binary symlink for: {bin}")
+        msg(f"generate binary symlink for: {bin}")
         execute(
             f"ln -snf {generationPath}/store/{base}/bin/{bin} {generationPath}/store/nip/{bin}"
         )
@@ -67,7 +70,7 @@ def createBinLinks(generationPath: str, base: str):
 def cpWarehouseFiles(warehouseNIP: str, generationPath: str):
     packs = [f.name for f in os.scandir(warehouseNIP) if f.name != "nip"]
     for file in list(packs):
-        info(f"copy warehouse file: {file}")
+        msg(f"copy warehouse file: {file}")
         execute(f"cp {warehouseNIP}/{file} {generationPath}/store/nip/{file}")
 
 
@@ -85,7 +88,7 @@ def createGeneration(
     execute(f"ln -snf {generationPath}/store {NIP_INSTALL}/store")
 
     if os.path.isdir(generationPath) is False:
-        info("create generation")
+        msg("create generation")
         imagePull(tags)
         execute(f"mkdir -p {generationPath}/store/nip")
         createWarehouseLink(WAREHOUSE_PATH, f"{generationPath}/store")
@@ -94,7 +97,7 @@ def createGeneration(
             base = default[0]
             createBinLinks(generationPath, base)
             for d in default[1:]:
-                info(f"overriding symlink for: {d}")
+                msg(f"overriding symlink for: {d}")
                 execute(
                     f"ln -snf {generationPath}/store/{base} {generationPath}/store/{d}"
                 )
@@ -112,4 +115,4 @@ md5sum = createGeneration(
     config.config["defaults"],
 )
 
-info(f"current generation is {md5sum}")
+msg(f"current generation is {md5sum}")
