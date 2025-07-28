@@ -2,11 +2,11 @@ from typings import Config
 
 config: Config = {
     "tags": [
-        "hello--2.12.2--Mi4xMi4y",
+        "hello--2.10--Mi4xMA",
     ],
     "defaults": [
         [
-            "cclzqflg1hkw90dsykzc6ffp5nm0yc38-hello-2.12.2",
+            "2g13canlyc7b44mbr5fh62pdyvv6xrjl-hello-2.10",
         ],
     ],
 }
