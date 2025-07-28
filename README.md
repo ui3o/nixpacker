@@ -31,7 +31,7 @@ Build nix package into docker image
   ``` 
 * *recommended warehouse browsing*
   ```
-  ls -1 .nip/warehouse | fzf
+  ls -1 ~/.nip/warehouse | fzf
   ```
 
 original:

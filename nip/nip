@@ -47,7 +47,7 @@ def imagePull(tags: list[str]):
 
 def createWarehouseLink(warehouse: str, generationStorePath: str):
     # generate symlinks to /nix/store
-    packs = [f.name for f in os.scandir(warehouse) if f.is_dir()]
+    packs = [f.name for f in os.scandir(warehouse) if f.is_dir() and f.name != "nip"]
     for dirname in list(packs):
         info(f"generate symlink for: {dirname}")
         execute(f"ln -snf {warehouse}/{dirname} {generationStorePath}/{dirname}")
@@ -61,14 +61,12 @@ def createBinLinks(generationPath: str, base: str):
             f"ln -snf {generationPath}/store/{base}/bin/{bin} {generationPath}/store/nip/{bin}"
         )
 
+
 def cpWarehouseFiles(warehouseNIP: str, generationPath: str):
     packs = [f.name for f in os.scandir(warehouseNIP) if f.name != "nip"]
     for file in list(packs):
         info(f"copy warehouse file: {file}")
-        execute(
-            f"cp {warehouseNIP}/{file} {generationPath}/store/nip/{file}"
-        )
-
+        execute(f"cp {warehouseNIP}/{file} {generationPath}/store/nip/{file}")
 
 
 def createGeneration(
