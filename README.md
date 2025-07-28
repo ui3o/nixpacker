@@ -1,6 +1,8 @@
 # nixpacker
 Build nix package into docker image
 
+* for new release create please use tag generator page: https://ui3o.github.io/nixpacker/
+
 # install
 
 * `podman run --rm -v $HOME/.config:/root/.config -v $HOME/.nix:/nix -it docker.io/ui3o/nixpacker:nip`
