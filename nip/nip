@@ -7,12 +7,6 @@ import subprocess
 import json
 import hashlib
 
-WAREHOUSE_PATH = os.path.expanduser("~/.nip/warehouse")
-CONFIG_PATH = os.path.expanduser("~/.config/nip")
-sys.dont_write_bytecode = True
-sys.path.append(CONFIG_PATH)
-import config  # noqa: E402
-
 
 def info(msg: str):
     print(f"[INFO] {msg}")
@@ -20,7 +14,15 @@ def info(msg: str):
 
 
 NIP_INSTALL = os.environ.get("NIP_INSTALL", "/nix")
+WAREHOUSE_PATH = os.path.expanduser("~/.nip/warehouse")
+CONFIG_PATH = os.path.expanduser("~/.config/nip")
+sys.dont_write_bytecode = True
+sys.path.append(CONFIG_PATH)
 info(f"NIP_INSTALL is {NIP_INSTALL}")
+if not os.path.exists(CONFIG_PATH):
+    info(f"[ERROR] CONFIG_PATH does not exist: {CONFIG_PATH}")
+    sys.exit(1)
+import config  # noqa: E402
 
 
 def execute(cmd):
@@ -102,6 +104,7 @@ def createGeneration(
 
     return md5sum
 
+execute(f"mkdir -p {NIP_INSTALL}")
 
 # create link generation
 md5sum = createGeneration(
