@@ -2,7 +2,7 @@ name: "[nip] NIP Image CI"
 on:
   push:
     tags:        
-      - '**' # Push events to v1 tag
+      - 'nip-*' # Push events to v1 tag
 
 jobs:
   build:
@@ -29,7 +29,9 @@ jobs:
       with:
         push: true
         context: "{{defaultContext}}:nip"
-        tags: ui3o/nixpacker:nip
+        tags: |
+          ui3o/nixpacker:${{steps.tag.outputs.tag}}
+          ui3o/nixpacker:latest
         platforms: linux/amd64,linux/arm64        
     - name: "Docker Hub Description"
       uses: peter-evans/dockerhub-description@v3

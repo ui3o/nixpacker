@@ -99,7 +99,8 @@ def createGeneration(
                     f"ln -snf {generationPath}/store/{base} {generationPath}/store/{d}"
                 )
         cpWarehouseFiles(f"{WAREHOUSE_PATH}/nip", generationPath)
-        execute(f"cp -a {CONFIG_PATH}/ {generationPath}/store/nip")
+        execute(f"cp -a {CONFIG_PATH}/. {generationPath}/store/nip")
+        execute(f"touch {generationPath}/store/nip/{md5sum}.hash")
 
     return md5sum
 
