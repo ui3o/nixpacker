@@ -61,6 +61,15 @@ def createBinLinks(generationPath: str, base: str):
             f"ln -snf {generationPath}/store/{base}/bin/{bin} {generationPath}/store/nip/{bin}"
         )
 
+def cpWarehouseFiles(warehouseNIP: str, generationPath: str):
+    packs = [f.name for f in os.scandir(warehouseNIP) if f.name != "nip"]
+    for file in list(packs):
+        info(f"copy warehouse file: {file}")
+        execute(
+            f"cp {warehouseNIP}/{file} {generationPath}/store/nip/{file}"
+        )
+
+
 
 def createGeneration(
     tags: list[str],
@@ -89,8 +98,8 @@ def createGeneration(
                 execute(
                     f"ln -snf {generationPath}/store/{base} {generationPath}/store/{d}"
                 )
-        execute(f"cp -a {WAREHOUSE_PATH}/nip/. {generationPath}/store/nip")
-        execute(f"cp -a {CONFIG_PATH}/. {generationPath}/store/nip")
+        cpWarehouseFiles(f"{WAREHOUSE_PATH}/nip", generationPath)
+        execute(f"cp -a {CONFIG_PATH}/ {generationPath}/store/nip")
 
     return md5sum
 
