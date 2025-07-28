@@ -7,23 +7,20 @@ import subprocess
 import json
 import hashlib
 
+WAREHOUSE_PATH = os.path.expanduser("~/.nip/warehouse")
+CONFIG_PATH = os.path.expanduser("~/.config/nip")
 sys.dont_write_bytecode = True
-sys.path.append(os.path.expanduser("~/.config/nip"))
+sys.path.append(CONFIG_PATH)
 import config  # noqa: E402
-
-
-# print(sys.argv)
-NIP_INSTALL = os.environ.get("NIP_INSTALL", "/nix")
-print(f"NIP_INSTALL is {NIP_INSTALL}")
-
-generationPath = ""
-homeFolder = os.environ.get("HOME", "")
-defaultsMap: dict[str, str] = {}
 
 
 def info(msg: str):
     print(f"[INFO] {msg}")
     sys.stdout.flush()
+
+
+NIP_INSTALL = os.environ.get("NIP_INSTALL", "/nix")
+info(f"NIP_INSTALL is {NIP_INSTALL}")
 
 
 def execute(cmd):
@@ -52,16 +49,16 @@ def createWarehouseLink(warehouse: str, generationStorePath: str):
     # generate symlinks to /nix/store
     packs = [f.name for f in os.scandir(warehouse) if f.is_dir()]
     for dirname in list(packs):
-        print("[INFO] generate symlink for: ", dirname)
+        info(f"generate symlink for: {dirname}")
         execute(f"ln -snf {warehouse}/{dirname} {generationStorePath}/{dirname}")
 
 
 def createBinLinks(generationPath: str, base: str):
     packs = [f.name for f in os.scandir(f"{generationPath}/store/{base}/bin")]
     for bin in list(packs):
-        print("[INFO] generate binary symlink for: ", bin)
+        info(f"generate binary symlink for: {bin}")
         execute(
-            f"ln -snf {generationPath}/store/{base}/bin/{bin} {generationPath}/store/bin/{bin}"
+            f"ln -snf {generationPath}/store/{base}/bin/{bin} {generationPath}/store/nip/{bin}"
         )
 
 
@@ -69,12 +66,10 @@ def createGeneration(
     tags: list[str],
     defaults: list[list[str]],
 ) -> str:
-    global generationPath, homeFolder
     # check if docker image was pulled
     defToJson = json.dumps(tags) + json.dumps(defaults)
     md5sum = hashlib.md5(defToJson.encode("utf-8")).hexdigest()
     generationPath = os.path.expanduser(f"~/.nip/generations/{md5sum}")
-    warehouse = os.path.expanduser("~/.nip/warehouse")
 
     # create generation link in container
     execute("mkdir -p ~/.nip/generations")
@@ -83,17 +78,20 @@ def createGeneration(
     if os.path.isdir(generationPath) is False:
         info("create generation")
         imagePull(tags)
-        execute(f"mkdir -p {generationPath}/store/bin")
-        createWarehouseLink(warehouse, f"{generationPath}/store")
+        execute(f"mkdir -p {generationPath}/store/nip")
+        createWarehouseLink(WAREHOUSE_PATH, f"{generationPath}/store")
 
         for default in defaults:
             base = default[0]
             createBinLinks(generationPath, base)
             for d in default[1:]:
-                print("[INFO] overriding symlink for: ", d)
+                info(f"overriding symlink for: {d}")
                 execute(
                     f"ln -snf {generationPath}/store/{base} {generationPath}/store/{d}"
                 )
+        execute(f"cp -a {WAREHOUSE_PATH}/nip/. {generationPath}/store/nip")
+        execute(f"cp -a {CONFIG_PATH}/. {generationPath}/store/nip")
+
     return md5sum
 
 
