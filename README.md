@@ -1,12 +1,23 @@
 # nixpacker
 Build nix package into docker image
 
-* for new release create please use tag generator page: https://ui3o.github.io/nixpacker/
-
 # install
 
-* `podman run -it --rm -v $HOME:/root:Z ui3o/nixpacker:nip`
-* `export PATH="/nix/store/nip:$HOME/.nip/warehouse/nip:$PATH"`
+1. install nip: ```podman run -it --rm -v $HOME:/root:Z ui3o/nixpacker:nip```
+2. add nip to path: ```export PATH="/nix/store/nip:$HOME/.nip/warehouse/nip:$PATH"```
+
+
+# build steps
+
+* check available package on this site: https://lazamar.co.uk/nix-versions
+* create a new git tag:
+  * for new release create please use tag generator page: https://ui3o.github.io/nixpacker/
+
+# usage
+
+1. edit file in ```~/.config/nip/config.py```
+2. run ```nip``` 
+3. recommended warehouse browsing: `ls -1 .nip/warehouse | fzf`
 
 original:
  * **/nix/store/item-a** =use=> **/nix/store/item-b**
@@ -22,12 +33,5 @@ default override:
  * /nix/store/item-a-v1 =linked=> **/nix/warehouse/item-a**
 
 
-# build steps
 
-* check available package on this site: https://lazamar.co.uk/nix-versions
-  * Note: check `nixos-x.x` and `nixpkgs-x.x-darwin` (where x.x is any) channel that the same version is also available
-* create a new git tag like this: `hello--2.10`
-
-# run steps
-* `podman run --rm -v $HOME/.nix:/nix -it docker.io/ui3o/nixpacker:hello--2.10` this step copy the nix store to the shared volume
 
