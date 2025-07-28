@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Two Input Generator</title>
+    <title>Tag Generator</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -40,6 +40,11 @@
         font-size: 1rem;
         box-sizing: border-box;
       }
+      .comment {
+        font-weight: 200;
+        font-style: italic;
+        font-size: smaller;
+      }
       button {
         width: 100%;
         padding: 0.8rem;
@@ -55,12 +60,14 @@
       button:hover {
         background: #0056b3;
       }
-      .result {
+      .result-container {
         margin-top: 1.5rem;
+      }
+      .result {
         padding: 1rem;
         background: #e9ecef;
         border-radius: 4px;
-        min-height: 2rem;
+        min-height: 1rem;
         word-break: break-all;
       }
       @media (max-width: 500px) {
@@ -69,22 +76,24 @@
         }
       }
     </style>
-    <script src="coi-serviceworker.js"></script>
   </head>
   <body>
     <div class="container">
       <form id="generatorForm">
         <div class="form-group">
-          <label for="input1">Input 1</label>
+          <label for="input1">Package name and version</label>
+          <label for="input1" class="comment"
+            >with tab character separation (e.g., hello ↦ 2.10)</label
+          >
           <input type="text" id="input1" name="input1" required />
-        </div>
-        <div class="form-group">
-          <label for="input2">Input 2</label>
-          <input type="text" id="input2" name="input2" required />
         </div>
         <button type="submit">Generate</button>
       </form>
-      <div class="result" id="result"></div>
+
+      <div class="form-group result-container">
+        <label for="result">Your git tag:</label>
+        <div class="result" id="result"></div>
+      </div>
     </div>
     <script>
       document
@@ -92,17 +101,23 @@
         .addEventListener("submit", function (e) {
           e.preventDefault();
           const input1 = document.getElementById("input1").value.trim();
-          const input2 = document.getElementById("input2").value.trim();
+          packageName = input1.split("\t")[0];
+          packageVersion = input1.split("\t")[1];
+          if (!packageName || !packageVersion) {
+            document.getElementById("result").textContent =
+              "Please provide both package name and version with tab character separation.";
+            return;
+          }
+          version = btoa(packageVersion).replaceAll("=", "");
+          packageVersion = packageVersion.replace(/[^a-zA-Z0-9.]/g, ".");
+          packageVersion =
+            packageVersion[0] === "."
+              ? packageVersion.slice(1)
+              : packageVersion;
           document.getElementById(
             "result"
-          ).textContent = `Input 1: ${input1} | Input 2: ${input2}`;
+          ).textContent = `${packageName}--${packageVersion}--${version}`;
         });
-      async function init() {
-        var f = await fetch("https://lazamar.co.uk/nix-versions/");
-        var a = await f.text();
-        console.log(a);
-      }
-      init();
     </script>
   </body>
 </html>
