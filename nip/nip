@@ -25,7 +25,7 @@ NIP_INSTALL = os.environ.get("NIP_INSTALL", "/nix")
 WAREHOUSE_PATH = os.path.expanduser("~/.nip/warehouse")
 CONFIG_PATH = os.path.expanduser("~/.config/nip")
 sys.dont_write_bytecode = True
-sys.path.append(CONFIG_PATH)
+sys.path.insert(0, CONFIG_PATH)
 msg(f"NIP_INSTALL is {NIP_INSTALL}")
 if not os.path.exists(CONFIG_PATH):
     msg(f"CONFIG_PATH does not exist: {CONFIG_PATH}. Start to create!", isError=True)
