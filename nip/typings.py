@@ -9,7 +9,7 @@ class Config(TypedDict, total=False):
     example: docker.io tag is hello--2.10
 
     """
-    defaults: Required[list[list[str]]]
+    defaults: Required[dict[str, list[str]]]
     """
     list of available packages on container path
 

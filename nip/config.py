@@ -4,9 +4,9 @@ config: Config = {
     "tags": [
         "hello--2.10--Mi4xMA",
     ],
-    "defaults": [
-        [
-            "2g13canlyc7b44mbr5fh62pdyvv6xrjl-hello-2.10",
+    "defaults": {
+        "hello": [
+            "f6y8yn622rr4958ghsk1k1ay1j11js9r-hello-2.10",
         ],
-    ],
+    },
 }

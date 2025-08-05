@@ -78,7 +78,7 @@ def cpWarehouseFiles(warehouseNIP: str, generationPath: str):
 
 def createGeneration(
     tags: list[str],
-    defaults: list[list[str]],
+    defaults: dict[str, list[str]],
 ) -> str:
     # check if docker image was pulled
     defToJson = json.dumps(tags) + json.dumps(defaults)
@@ -88,15 +88,21 @@ def createGeneration(
     # create generation link in container
     execute("mkdir -p ~/.nip/generations")
     execute(f"ln -snf {generationPath}/store {NIP_INSTALL}/store")
+    execute(f"ln -snf {generationPath}/defaults {NIP_INSTALL}/defaults")
 
     if os.path.isdir(generationPath) is False:
         msg("create generation")
         imagePull(tags)
-        execute(f"mkdir -p {generationPath}/store/nip")
+        execute(f"mkdir -p {generationPath}/store/nip {generationPath}/defaults")
         createWarehouseLink(WAREHOUSE_PATH, f"{generationPath}/store")
 
-        for default in defaults:
+        for name, default in defaults.items():
             base = default[0]
+            msg(f"create defaults symlink for: {base} as {name} in {generationPath}/defaults")
+            # create symlink for default
+            execute(
+                f"ln -snf {generationPath}/store/{base} {generationPath}/defaults/{name}"
+            )
             createBinLinks(generationPath, base)
             for d in default[1:]:
                 msg(f"overriding symlink for: {d}")

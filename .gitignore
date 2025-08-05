@@ -1,5 +1,4 @@
-test/
-__pycache__
-.vscode/settings.json
 nix/
-.vscode/launch.json
+.vscode/
+test/
+__pycache__/
