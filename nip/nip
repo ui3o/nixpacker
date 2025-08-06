@@ -22,7 +22,7 @@ def execute(cmd):
 
 
 NIP_INSTALL = os.environ.get("NIP_INSTALL", "/nix")
-WAREHOUSE_PATH = os.path.expanduser("~/.nip/warehouse")
+WAREHOUSE_PATH = f"{NIP_INSTALL}/warehouse"
 CONFIG_PATH = os.path.expanduser("~/.config/nip")
 sys.dont_write_bytecode = True
 sys.path.insert(0, CONFIG_PATH)
@@ -36,6 +36,7 @@ import config  # noqa: E402
 
 
 def imagePull(tags: list[str]):
+    execute(f"mkdir -p {WAREHOUSE_PATH}")
     # check if docker image was pulled
     podman = "podman run --pull=always"
     # podman = "podman run --privileged"
@@ -43,11 +44,11 @@ def imagePull(tags: list[str]):
         # image = f"localhost/local-nixpacker:{tag}"
         image = f"ui3o/nixpacker:{tag}"
         if (
-            os.path.exists(os.path.expanduser(f"~/.nip/warehouse/nip/{tag}.info"))
+            os.path.exists(f"{WAREHOUSE_PATH}/nip/{tag}.info")
             is False
         ):
             msg(f"pull and run docker image: {image}")
-            execute(f"{podman} --rm -v $HOME/.nip/warehouse:/warehouse:Z -it {image}")
+            execute(f"{podman} --rm -v {WAREHOUSE_PATH}:/warehouse:Z -it {image}")
         else:
             msg(f"this docker image already pulled: {image}")
 
@@ -68,12 +69,12 @@ def createBinLinks(generationPath: str, base: str):
             f"ln -snf {generationPath}/store/{base}/bin/{bin} {generationPath}/store/nip/{bin}"
         )
 
-
-def cpWarehouseFiles(warehouseNIP: str, generationPath: str):
-    packs = [f.name for f in os.scandir(warehouseNIP) if f.name != "nip"]
+# it copies NIP files (pulled image info, current nip version) from the warehouse to the generation path
+def cpWarehouseNipFiles(warehouse_nip: str, generationPath: str):
+    packs = [f.name for f in os.scandir(warehouse_nip) if f.name != "nip"]
     for file in list(packs):
         msg(f"copy warehouse file: {file}")
-        execute(f"cp {warehouseNIP}/{file} {generationPath}/store/nip/{file}")
+        execute(f"cp {warehouse_nip}/{file} {generationPath}/store/nip/{file}")
 
 
 def createGeneration(
@@ -109,7 +110,8 @@ def createGeneration(
                 execute(
                     f"ln -snf {generationPath}/store/{base} {generationPath}/store/{d}"
                 )
-        cpWarehouseFiles(f"{WAREHOUSE_PATH}/nip", generationPath)
+        cpWarehouseNipFiles(f"{WAREHOUSE_PATH}/nip", generationPath)
+        # it copies current nip config into <generationPath>/store/nip
         execute(f"cp -a {CONFIG_PATH}/. {generationPath}/store/nip")
         execute(f"touch {generationPath}/store/nip/{md5sum}.hash")
 
