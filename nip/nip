@@ -30,8 +30,8 @@ msg(f"NIP_INSTALL is {NIP_INSTALL}")
 if not os.path.exists(CONFIG_PATH):
     msg(f"CONFIG_PATH does not exist: {CONFIG_PATH}. Start to create!", isError=True)
     execute(f"mkdir -p {CONFIG_PATH}")
-    execute(f"cp ~/.nip/warehouse/nip/config.py {CONFIG_PATH}/")
-    execute(f"cp ~/.nip/warehouse/nip/typings.py {CONFIG_PATH}/")
+    execute(f"cp {WAREHOUSE_PATH}/nip/config.py {CONFIG_PATH}/")
+    execute(f"cp {WAREHOUSE_PATH}/nip/typings.py {CONFIG_PATH}/")
 import config  # noqa: E402
 
 
